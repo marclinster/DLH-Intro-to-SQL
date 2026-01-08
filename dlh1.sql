@@ -15,7 +15,8 @@ Section: Tables and Queries: Basics
 */
 
 -- make sure you are connected to dlh1 database
-\c dlh1
+
+SELECT current_database()
 
 -- create a simple table
 
