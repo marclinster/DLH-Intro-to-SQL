@@ -6,13 +6,7 @@ Last updated Aug 22 2025
 
 ****************************************************************************************************/
 
--- dlh1.sql
 
-/*
-
-Section: Aggregates
-
-*/
 
 -- Explore the data set
 
@@ -24,6 +18,47 @@ SELECT * FROM customer
     AND TOWN = 'Koerich' ORDER BY since  ASC;
 
 SELECT COUNT(*) FROM customer WHERE town = 'Koerich';
+
+/* Views */
+
+DROP VIEW IF EXISTS customer_purchase_view;
+
+CREATE VIEW customer_purchase_view AS 
+    SELECT 
+        c.id AS customer_id,
+        c.first_name || ' ' || c.last_name AS customer_name,
+        c.town,
+        p.product_nbr,
+        pr.name AS product_name,
+        pr.category as product_category,
+        p.quantity,
+        p.id AS purchase_id,
+        p.order_date,
+        (p.quantity * pr.price) AS total_price
+    FROM customer c
+    JOIN purchase p ON c.id = p.customer_id
+    JOIN product pr ON p.product_nbr = pr.product_nbr;
+
+
+SELECT * FROM customer_purchase_view
+    WHERE town = 'Esch'
+    ORDER BY customer_name ASC, order_date DESC
+    LIMIT 20;
+
+
+/*
+
+Section: Aggregates
+
+*/
+
+SELECT COUNT (*) FROM customer;
+
+SELECT town, COUNT(id) 
+    FROM customer
+    GROUP BY TOWN 
+    ORDER BY town ASC;
+
 
 SELECT COUNT(purchase_id) FROM purchase 
     JOIN customer ON purchase.customer_id = customer.id

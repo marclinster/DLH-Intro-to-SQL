@@ -324,20 +324,3 @@ INSERT INTO purchase (order_date, customer_id, product_nbr, quantity) VALUES
 ('2025-06-17', 67, 'butter', 1),
 ('2025-06-19', 70, 'cheese_10', 3);
 
-DROP VIEW IF EXISTS customer_purchase_view;
-
-CREATE VIEW customer_purchase_view AS 
-    SELECT 
-        c.id AS customer_id,
-        c.first_name || ' ' || c.last_name AS customer_name,
-        c.town,
-        p.product_nbr,
-        pr.name AS product_name,
-        pr.category as product_category,
-        p.quantity,
-        p.id AS purchase_id,
-        p.order_date,
-        (p.quantity * pr.price) AS total_price
-    FROM customer c
-    JOIN purchase p ON c.id = p.customer_id
-    JOIN product pr ON p.product_nbr = pr.product_nbr;

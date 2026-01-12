@@ -23,7 +23,7 @@ SELECT current_database()
 DROP TABLE IF EXISTS mycustomer;
 
 CREATE TABLE mycustomer (
-	id INTEGER,
+	id INTEGER PRIMARY KEY,
 	email TEXT,
 	first_name TEXT,
 	last_name TEXT,
@@ -40,86 +40,116 @@ Section: Query Basics
 INSERT INTO mycustomer (id, email, first_name, last_name, since) 
 	VALUES 
 		(1,'marc@marclinster.com', 'Marc', 'Linster','1.1.2025'),
-		(2,'jmu@gmail.lu','Jeff', 'Mueller','1.2.2025'),
-		(3,'bini@hotmail.lu', 'Jean','Bintner','1.3.2025');
+		(2,'jmu@gmail.lu','Jeff', 'Mueller','5.6.2024'),
+		(3,'bini@hotmail.lu', 'Jean','Bintner','7.9.2023');
 
 
 SELECT first_name FROM mycustomer;
 
 SELECT first_name, last_name FROM mycustomer;
-
 SELECT * FROM mycustomer WHERE first_name LIKE 'Je%';
-
 SELECT * FROM mycustomer WHERE first_name LIKE 'je%';
-
 SELECT * FROM mycustomer WHERE first_name ILIKE 'je%';
-
 SELECT * FROM mycustomer WHERE first_name LIKE '_e%';
 
-/*
+UPDATE mycustomer SET first_name = 'Mark' WHERE id = 1;
+SELECT * FROM mycustomer;
+DELETE FROM mycustomer WHERE id = 1;
+INSERT INTO mycustomer (id, email, first_name, last_name, since) 
+	VALUES 
+		(1,'marc@marclinster.com', 'Marc', 'Linster','1.1.2025');
 
-Section: Operators
+SELECT * FROM mycustomer;
+SELECT * FROM mycustomer ORDER BY last_name ASC;
 
-*/
 
-SELECT * FROM mycustomer WHERE since 
-	BETWEEN '2025-01-02' AND '2025-02-01';
+/* Section: Operators in the WHERE clause */
 
-SELECT
-	first_name || ' ' || last_name AS customer_name
-FROM
-	mycustomer
-WHERE
-	first_name LIKE 'Je%';
+SELECT * FROM mycustomer;
+SELECT * FROM mycustomer WHERE id = 1;
+SELECT * FROM mycustomer WHERE id = 1 OR id = 3;
+SELECT * FROM mycustomer WHERE id IN (1,2);
+SELECT email, last_name, first_name 
+	FROM mycustomer 
+	WHERE id IN (1,2);
+SELECT email, last_name, first_name 
+	FROM mycustomer 
+	WHERE id IN (1,2)
+ORDER BY last_name ASC;
 
--- use FORMAT instaed of string append ||
 
-SELECT
-	FORMAT ('%s %s', first_name, last_name) 
-		AS customer_name
-FROM
-	mycustomer
-WHERE
-	first_name LIKE 'Je%';	
 
--- try the EXTRACT DOY function
+SELECT * FROM mycustomer WHERE first_name = 'Jeff';
+SELECT * FROM mycustomer WHERE first_name = 'jeff';
+SELECT * FROM mycustomer WHERE first_name LIKE 'Je%';
+SELECT * FROM mycustomer WHERE first_name LIKE 'je%';
+SELECT * FROM mycustomer WHERE first_name ILIKE 'je%';
+SELECT * FROM mycustomer WHERE first_name LIKE '_e%';
+
+
+SELECT last_name, first_name FROM mycustomer WHERE since = '7.9.2023';
+SELECT last_name, first_name FROM mycustomer WHERE since > '7.9.2023';
+SELECT last_name, first_name FROM mycustomer WHERE since >= '7.9.2023';
+SELECT last_name, first_name, since 
+	FROM mycustomer 
+	WHERE since >= '7.9.2023'
+	ORDER BY since DESC;
+
+/* Calculation in SELECT */
+
+SELECT last_name || ', ' || first_name AS customer 
+FROM mycustomer;
+
+SELECT 
+	FORMAT ('%s %s has been a valued customer since %s', 
+			first_name, last_name, since)
+	FROM mycustomer;
+
+SELECT FORMAT ('%s. %s has been a valued customer since %s', 
+			SUBSTRING (first_name, 1,1), last_name, since)
+	FROM mycustomer;
+
+SELECT TO_CHAR (NOW(), 'DAY');
+SELECT TO_CHAR (NOW(), 'MON');
+SELECT TO_CHAR (CURRENT_DATE, 'Day Month, DD, YYYY');
+SELECT TO_CHAR (12345.55, '99G999G999D99L');
+
+
+SELECT 15 * 4;	
+SELECT 15 / 4;
+SELECT 15 / 4.0;
+SELECT MOD (15, 4);
+
+SELECT PI();
+SELECT PI()::INTEGER;
+SELECT PI()::NUMERIC;
+
+SELECT ROUND(PI()::NUMERIC);
+SELECT ROUND(PI()::NUMERIC, 2);
+
+
+SELECT last_name, since, EXTRACT (DAY FROM since) FROM mycustomer;
+SELECT last_name, since, EXTRACT (YEAR FROM since) FROM mycustomer;
+SELECT last_name, since, EXTRACT (DOW FROM since) FROM mycustomer;
+
+SELECT last_name, since,  NOW()::date - since FROM mycustomer;
+SELECT last_name, since, AGE( NOW(), since) FROM mycustomer;
+SELECT last_name, since, EXTRACT (YEAR FROM AGE(NOW(), since)) AS nbr_years FROM mycustomer;
 
 SELECT 'It is the ' || EXTRACT (DOY FROM current_date) || 'th day of the year';
 
--- and
+SELECT 'It is the ' || EXTRACT (DOY FROM current_date) || 'th day of the year' as day_of_year;
 
-SELECT 'It is the ' || EXTRACT (DOY FROM current_date) || 'th day of the year' AS day_of_year;
-
-
--- simple calculations in the select clause
-
-SELECT
-	first_name || ' ' || last_name 
-		AS customer_name,
-	'Customer for ' || EXTRACT (DAY FROM NOW() - since) || ' ' || 'days' 
-		AS how_long
-FROM
-	mycustomer;	
-
--- use FORMAT instaed of string append ||
-
-SELECT
-	FORMAT ('%s %s', first_name, last_name) 
-		AS customer_name
-FROM
-	MYCUSTOMER
-WHERE
-	FIRST_NAME LIKE 'Je%';	
-
--- simple calculations in the select clause
-
-SELECT
-	FORMAT ('%s %s', first_name, last_name) 
-		AS customer_name,
-	'Customer for ' || EXTRACT (DAY FROM NOW() - since) || ' ' || 'days' 
-		AS how_long
-FROM
-	MYCUSTOMER;
+SELECT FORMAT (
+		'%s. %s is our oldest customer. ' 
+		'He has been a valued customer for %s years, since %s', 
+		SUBSTRING (first_name, 1,1), 
+		last_name, 
+		EXTRACT (YEAR FROM AGE( since, NOW())),
+		since)
+	FROM mycustomer
+	ORDER BY since ASC
+	LIMIT 1;
 
 
 /*
@@ -183,44 +213,33 @@ SELECT * FROM myorder;
 SELECT * FROM myorder, myproduct
 	WHERE myorder.product_id = myproduct.id;
 
--- add a foreign key constraint to make sure all orders refer to existing products
+-- add a foreign key constraint to make sure all orders refer to existing products and existing customers
 
 DROP TABLE IF EXISTS myorder;
 
 CREATE TABLE myorder (
 	id INT PRIMARY KEY GENERATED BY DEFAULT AS IDENTITY,
 	date DATE,
-	product_nbr VARCHAR(10) REFERENCES myproduct (nbr),
+	customer_id INTEGER NOT NULL REFERENCES mycustomer (id),
+	product_nbr VARCHAR(10) NOT NULL REFERENCES myproduct (nbr),
 	qty INTEGER NOT NULL CHECK (qty > 0)
 );
+
 -- order for a chisel
-INSERT INTO myorder (date,product_nbr, qty) 
-	VALUES ('2.2.2025', 'chisel_004', 9);
+INSERT INTO myorder (date,customer_id, product_nbr, qty) 
+	VALUES ('2.2.2025', 1, 'chisel_004', 9);
 
 -- nonsense order
 INSERT INTO myorder 
 (date,product_nbr, qty) 
 VALUES ('2.2.2025', 'cheese_10', 9);
 
-
-SELECT * FROM myorder, myproduct
-WHERE myorder.product_nbr = myproduct.nbr;
-	
-
--- Linking customers, orders and products
--- make sure that all orders refer to existing customers and products
-
-ALTER TABLE myorder ADD COLUMN customer_id INTEGER REFERENCES mycustomer(id);
-
-ALTER TABLE mycustomer ADD CONSTRAINT mycustomer_id_unq UNIQUE (id);
-
-UPDATE myorder SET customer_id = 1 WHERE id = 1;
-
-SELECT * FROM myorder;
-
-SELECT * FROM myorder o, myproduct p, mycustomer c
-	WHERE o.product_nbr = p.nbr
-	AND o.customer_id = c.id;
+INSERT INTO myorder (date, customer_id, product_nbr, qty)
+	VALUES 
+		(NOW()::DATE, 1, 'ham_001', 1),
+		(NOW()::DATE, 1, 'ham_002', 1),
+		(NOW()::DATE-1, 2, 'chisel_004', 2),
+		('2025-03-01', 2, 'pli_019', 4);
 
 -- excercise slide 64
 
@@ -236,6 +255,16 @@ INSERT INTO myproduct (nbr, name, price)
        ('ham_004', 'Hammer Extra Large 1000gr', 25.00),
        ('chisel_005', 'Chisel wood', 12.87),
        ('pli_020', 'Pliers black, fixed', 3.50);	
+
+
+SELECT * FROM myorder o,
+		myproduct p,
+		mycustomer c
+	WHERE 
+		o.product_nbr = p.nbr
+	AND 
+o.customer_id = c.id;
+
 
 
 SELECT o.id AS order_id, 
@@ -260,7 +289,7 @@ Section: Database Joins
 
 SELECT * FROM myorder
 	JOIN mycustomer
-	ON myorders.customer_id = mycustomer.id;
+	ON myorder.customer_id = mycustomer.id;
 
 SELECT 
 	o.id AS order_id, 
@@ -276,11 +305,15 @@ SELECT * FROM mycustomer c
 	LEFT OUTER JOIN myorder o
 	ON c.id = o.customer_id;
 
--- customers who never ordered anything
-SELECT * FROM mycustomer c
-	LEFT OUTER JOIN myorder o
-	ON c.id = o.customer_id
-	WHERE o.id IS NULL;
+
+
+SELECT 
+	c.id, c.first_name, c.last_name, 
+	o.date, o.qty, 
+	p.name, p.price FROM mycustomer c
+JOIN myorder o ON c.id = o.customer_id
+JOIN myproduct p ON o.product_nbr = p.nbr;
+
 
 -- customers with order details, or blank if they didn't order anything
 SELECT * FROM mycustomer c
@@ -292,6 +325,12 @@ SELECT * FROM mycustomer c
 SELECT DISTINCT(p.*) FROM myproduct p
 	LEFT JOIN myorder o ON o.product_nbr = p. nbr
 	WHERE o.id IS NULL
+
+-- customers who never ordered anything
+SELECT * FROM mycustomer c
+	LEFT OUTER JOIN myorder o
+	ON c.id = o.customer_id
+	WHERE o.id IS NULL;
 
 /*
 
