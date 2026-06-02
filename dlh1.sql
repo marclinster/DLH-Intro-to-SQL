@@ -39,9 +39,9 @@ Section: Query Basics
 
 INSERT INTO mycustomer (id, email, first_name, last_name, since) 
 	VALUES 
-		(1,'marc@marclinster.com', 'Marc', 'Linster','1.1.2025'),
-		(2,'jmu@gmail.lu','Jeff', 'Mueller','5.6.2024'),
-		(3,'bini@hotmail.lu', 'Jean','Bintner','7.9.2023');
+		(1,'marc@marclinster.com', 'Marc', 'Linster','2025-01-01'),
+		(2,'jmu@gmail.lu','Jeff', 'Mueller','2024-05-06'),
+		(3,'bini@hotmail.lu', 'Jean','Bintner','2023-09-07');
 
 
 SELECT first_name FROM mycustomer;
@@ -57,7 +57,7 @@ SELECT * FROM mycustomer;
 DELETE FROM mycustomer WHERE id = 1;
 INSERT INTO mycustomer (id, email, first_name, last_name, since) 
 	VALUES 
-		(1,'marc@marclinster.com', 'Marc', 'Linster','1.1.2025');
+		(1,'marc@marclinster.com', 'Marc', 'Linster','2025-01-01');
 
 SELECT * FROM mycustomer;
 SELECT * FROM mycustomer ORDER BY last_name ASC;
@@ -87,12 +87,12 @@ SELECT * FROM mycustomer WHERE first_name ILIKE 'je%';
 SELECT * FROM mycustomer WHERE first_name LIKE '_e%';
 
 
-SELECT last_name, first_name FROM mycustomer WHERE since = '7.9.2023';
-SELECT last_name, first_name FROM mycustomer WHERE since > '7.9.2023';
-SELECT last_name, first_name FROM mycustomer WHERE since >= '7.9.2023';
+SELECT last_name, first_name FROM mycustomer WHERE since = '2023-09-07';
+SELECT last_name, first_name FROM mycustomer WHERE since > '2023-09-07';
+SELECT last_name, first_name FROM mycustomer WHERE since >= '2023-09-07';
 SELECT last_name, first_name, since 
 	FROM mycustomer 
-	WHERE since >= '7.9.2023'
+	WHERE since >= '2023-09-07'
 	ORDER BY since DESC;
 
 /* Calculation in SELECT */
@@ -150,6 +150,12 @@ SELECT FORMAT (
 	FROM mycustomer
 	ORDER BY since ASC
 	LIMIT 1;
+
+/* casting example */
+
+SELECT NOW();
+
+SELECT NOW()::DATE;
 
 
 /*
@@ -245,9 +251,9 @@ INSERT INTO myorder (date, customer_id, product_nbr, qty)
 
 INSERT INTO mycustomer (id, email, first_name, last_name, since) 
 	VALUES 
-		(4,'marc@marclinster.com', 'Marc', 'Linster','1.1.2025'),
-		(5,'jmu@gmail.lu','Jeff', 'Mueller','1.2.2025'),
-		(6,'bini@hotmail.lu', 'Jean','Bintner','1.3.2025');
+		(4,'marc@marclinster.com', 'Marc', 'Linster','2025-01-01'),
+		(5,'jmu@gmail.lu','Jeff', 'Mueller','2025-02-01'),
+		(6,'bini@hotmail.lu', 'Jean','Bintner','2025-03-01');
 
 INSERT INTO myproduct (nbr, name, price)
    VALUES
@@ -279,6 +285,54 @@ SELECT o.id AS order_id,
 	WHERE o.product_nbr = p.nbr
 		AND o.customer_id = c.id
 	ORDER BY order_date ASC;
+
+
+/* The NULL problem */
+
+CREATE TABLE mytest (
+	id INTEGER PRIMARY KEY,
+	value1 INTEGER,
+	value2 TEXT
+);
+
+TRUNCATE TABLE mytest;
+
+INSERT INTO mytest (id, value1, value2) VALUES (1, 10, '20');
+INSERT INTO mytest (id, value1, value2) VALUES (2, NULL, '20');
+INSERT INTO mytest (id, value1, value2) VALUES (3, 0, NULL);
+INSERT INTO mytest (id, value1, value2) VALUES (4, 10, '');
+INSERT INTO mytest (id, value1) VALUES (5, NULL);
+
+
+SELECT * FROM mytest;
+SELECT * FROM mytest WHERE value1 < 15;
+SELECT * FROM mytest WHERE value2 < '30';
+SELECT * FROM mytest WHERE value2 IS NULL;
+SELECT * FROM mytest WHERE value2 IS NOT NULL;
+SELECT * FROM mytest WHERE value2 = '';
+
+
+/* Casts */
+
+SELECT '100'::INTEGER; 
+SELECT '100x'::INTEGER;
+SELECT NOW()::DATE;
+SELECT '2026-11-30'::DATE;
+SELECT '2026-11-31'::DATE;
+SELECT CAST('true' AS BOOLEAN),
+	CAST('false' as BOOLEAN),
+	CAST('T' as BOOLEAN),
+	CAST('F' as BOOLEAN);
+
+SELECT 
+    format_type(c.castsource, NULL) AS source_type,
+    format_type(c.casttarget, NULL) AS target_type
+FROM pg_cast c
+JOIN pg_type s ON c.castsource = s.oid
+JOIN pg_type t ON c.casttarget = t.oid
+ORDER BY 1, 2;
+
+
 	
 /*
 
