@@ -311,6 +311,11 @@ SELECT * FROM mytest WHERE value2 IS NULL;
 SELECT * FROM mytest WHERE value2 IS NOT NULL;
 SELECT * FROM mytest WHERE value2 = '';
 
+SELECT id, value1, value2 FROM mytest;
+
+SELECT id, COALESCE(value1, -1) as value1, COALESCE(value2, 'this is NULL') as value2 FROM mytest;
+
+
 
 /* Casts */
 
