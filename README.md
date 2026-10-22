@@ -22,6 +22,7 @@ The `setup.sql` script creates and initializes three databases used in the cours
 
 - PostgreSQL (server and `psql` client)
 - A terminal (macOS / Linux / Windows WSL)
+- For this class, which is taught using VMs at the [Digital Learning Hub Luxembourg](dlh.lu), I use the Windows Installer provided by [EnterpriseDB](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads).
 
 ---
 
